@@ -70,15 +70,16 @@ func init() {
 func init() { proto.RegisterFile("hello.proto", fileDescriptor_61ef911816e0a8ce) }
 
 var fileDescriptor_61ef911816e0a8ce = []byte{
-	// 125 bytes of a gzipped FileDescriptorProto
+	// 140 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0xce, 0x48, 0xcd, 0xc9,
 	0xc9, 0xd7, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x48, 0x56, 0x52, 0xe4, 0xe2, 0x0c,
 	0x2e, 0x29, 0xca, 0xcc, 0x4b, 0x77, 0x29, 0xc9, 0x17, 0x12, 0xe1, 0x62, 0x2d, 0x4b, 0xcc, 0x29,
-	0x4d, 0x95, 0x60, 0x54, 0x60, 0xd4, 0xe0, 0x0c, 0x82, 0x70, 0x8c, 0x92, 0xb8, 0x78, 0x3c, 0x40,
-	0xba, 0x82, 0x53, 0x8b, 0xca, 0x32, 0x93, 0x53, 0x85, 0x54, 0xb9, 0x58, 0xc1, 0x7c, 0x21, 0x5e,
-	0xbd, 0x82, 0x64, 0x3d, 0xb8, 0x6e, 0x29, 0x54, 0xae, 0x90, 0x36, 0x17, 0xbb, 0x73, 0x46, 0x62,
-	0x5e, 0x5e, 0x6a, 0x0e, 0x7e, 0x85, 0x1a, 0x8c, 0x06, 0x8c, 0x49, 0x6c, 0x60, 0x17, 0x19, 0x03,
-	0x02, 0x00, 0x00, 0xff, 0xff, 0x7e, 0x67, 0xcc, 0x29, 0xa0, 0x00, 0x00, 0x00,
+	0x4d, 0x95, 0x60, 0x54, 0x60, 0xd4, 0xe0, 0x0c, 0x82, 0x70, 0x8c, 0x26, 0x33, 0x72, 0xf1, 0x78,
+	0x80, 0xb4, 0x05, 0xa7, 0x16, 0x95, 0x65, 0x26, 0xa7, 0x0a, 0xa9, 0x72, 0xb1, 0x82, 0xf9, 0x42,
+	0xbc, 0x7a, 0x05, 0xc9, 0x7a, 0x70, 0xed, 0x52, 0xa8, 0x5c, 0x21, 0x6d, 0x2e, 0x76, 0xe7, 0x8c,
+	0xc4, 0xbc, 0xbc, 0xd4, 0x1c, 0xfc, 0x0a, 0x35, 0x18, 0x0d, 0x18, 0x85, 0xf4, 0xb9, 0x78, 0xa1,
+	0x8a, 0xfd, 0xf3, 0x52, 0xc3, 0x13, 0x2b, 0x09, 0x69, 0x49, 0x62, 0x03, 0xfb, 0xc1, 0x18, 0x10,
+	0x00, 0x00, 0xff, 0xff, 0x79, 0x7c, 0x33, 0x89, 0xd2, 0x00, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -97,6 +98,8 @@ type HelloServiceClient interface {
 	Hello(ctx context.Context, in *StringDto, opts ...grpc.CallOption) (*StringDto, error)
 	//  .. grpc的流使用 关键字 stream 指定启用流特性，参数部分是接收客户端参数的流，返回值是返回给客户端的流。
 	Channel(ctx context.Context, opts ...grpc.CallOption) (HelloService_ChannelClient, error)
+	// 单向流
+	ChannelOneWay(ctx context.Context, opts ...grpc.CallOption) (HelloService_ChannelOneWayClient, error)
 }
 
 type helloServiceClient struct {
@@ -147,12 +150,48 @@ func (x *helloServiceChannelClient) Recv() (*StringDto, error) {
 	return m, nil
 }
 
+func (c *helloServiceClient) ChannelOneWay(ctx context.Context, opts ...grpc.CallOption) (HelloService_ChannelOneWayClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_HelloService_serviceDesc.Streams[1], "/pc.HelloService/ChannelOneWay", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &helloServiceChannelOneWayClient{stream}
+	return x, nil
+}
+
+type HelloService_ChannelOneWayClient interface {
+	Send(*StringDto) error
+	CloseAndRecv() (*StringDto, error)
+	grpc.ClientStream
+}
+
+type helloServiceChannelOneWayClient struct {
+	grpc.ClientStream
+}
+
+func (x *helloServiceChannelOneWayClient) Send(m *StringDto) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *helloServiceChannelOneWayClient) CloseAndRecv() (*StringDto, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(StringDto)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // HelloServiceServer is the server API for HelloService service.
 type HelloServiceServer interface {
 	// 简单rpc使用
 	Hello(context.Context, *StringDto) (*StringDto, error)
 	//  .. grpc的流使用 关键字 stream 指定启用流特性，参数部分是接收客户端参数的流，返回值是返回给客户端的流。
 	Channel(HelloService_ChannelServer) error
+	// 单向流
+	ChannelOneWay(HelloService_ChannelOneWayServer) error
 }
 
 // UnimplementedHelloServiceServer can be embedded to have forward compatible implementations.
@@ -164,6 +203,9 @@ func (*UnimplementedHelloServiceServer) Hello(ctx context.Context, req *StringDt
 }
 func (*UnimplementedHelloServiceServer) Channel(srv HelloService_ChannelServer) error {
 	return status.Errorf(codes.Unimplemented, "method Channel not implemented")
+}
+func (*UnimplementedHelloServiceServer) ChannelOneWay(srv HelloService_ChannelOneWayServer) error {
+	return status.Errorf(codes.Unimplemented, "method ChannelOneWay not implemented")
 }
 
 func RegisterHelloServiceServer(s *grpc.Server, srv HelloServiceServer) {
@@ -214,6 +256,32 @@ func (x *helloServiceChannelServer) Recv() (*StringDto, error) {
 	return m, nil
 }
 
+func _HelloService_ChannelOneWay_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(HelloServiceServer).ChannelOneWay(&helloServiceChannelOneWayServer{stream})
+}
+
+type HelloService_ChannelOneWayServer interface {
+	SendAndClose(*StringDto) error
+	Recv() (*StringDto, error)
+	grpc.ServerStream
+}
+
+type helloServiceChannelOneWayServer struct {
+	grpc.ServerStream
+}
+
+func (x *helloServiceChannelOneWayServer) SendAndClose(m *StringDto) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *helloServiceChannelOneWayServer) Recv() (*StringDto, error) {
+	m := new(StringDto)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 var _HelloService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pc.HelloService",
 	HandlerType: (*HelloServiceServer)(nil),
@@ -228,6 +296,11 @@ var _HelloService_serviceDesc = grpc.ServiceDesc{
 			StreamName:    "Channel",
 			Handler:       _HelloService_Channel_Handler,
 			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "ChannelOneWay",
+			Handler:       _HelloService_ChannelOneWay_Handler,
 			ClientStreams: true,
 		},
 	},
