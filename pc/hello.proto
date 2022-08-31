@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package pc;
+
+
+
+
+
+//=====================测试proto=====================
+service HelloService {
+  rpc Hello (StringDto) returns (StringDto);
+}
+
+
+message StringDto{
+  string value = 1;
+}
