@@ -8,7 +8,13 @@ package pc;
 
 //=====================测试proto=====================
 service HelloService {
+
+  // 简单rpc使用
   rpc Hello (StringDto) returns (StringDto);
+
+  //  .. grpc的流使用 关键字 stream 指定启用流特性，参数部分是接收客户端参数的流，返回值是返回给客户端的流。
+  rpc Channel (stream StringDto) returns (stream StringDto);
+
 }
 
 
