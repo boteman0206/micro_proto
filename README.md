@@ -2,6 +2,8 @@
 proto文件
 
 
+其中的hello模块是学习测试rpc的模块
+
 
 添加子模块
 git submodule add https://gitlab.com/b-project
