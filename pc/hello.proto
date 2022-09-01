@@ -18,9 +18,23 @@ service HelloService {
   // 单向流使用
   rpc ChannelOneWay (stream StringDto) returns (StringDto);
 
+
+
 }
 
 
 message StringDto{
   string value = 1;
+}
+
+
+
+//=====================发布订阅模式=============================
+
+//    现在尝试基于 gRPC 和 pubsub 包，提供一个跨网络的发布和订阅系统。首先通过 Protobuf 定义一个发布订阅服务接口：
+service PubsubService {
+//    其中 Publish 是普通的 RPC 方法
+  rpc Publish (StringDto) returns (StringDto);
+//    Subscribe 则是一个单向的流服务。然后 gRPC 插件会为服务端和客户端生成对应的接口：
+  rpc Subscribe (StringDto) returns (stream StringDto);
 }

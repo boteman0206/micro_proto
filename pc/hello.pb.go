@@ -70,7 +70,7 @@ func init() {
 func init() { proto.RegisterFile("hello.proto", fileDescriptor_61ef911816e0a8ce) }
 
 var fileDescriptor_61ef911816e0a8ce = []byte{
-	// 140 bytes of a gzipped FileDescriptorProto
+	// 179 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0xce, 0x48, 0xcd, 0xc9,
 	0xc9, 0xd7, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x48, 0x56, 0x52, 0xe4, 0xe2, 0x0c,
 	0x2e, 0x29, 0xca, 0xcc, 0x4b, 0x77, 0x29, 0xc9, 0x17, 0x12, 0xe1, 0x62, 0x2d, 0x4b, 0xcc, 0x29,
@@ -78,8 +78,11 @@ var fileDescriptor_61ef911816e0a8ce = []byte{
 	0x80, 0xb4, 0x05, 0xa7, 0x16, 0x95, 0x65, 0x26, 0xa7, 0x0a, 0xa9, 0x72, 0xb1, 0x82, 0xf9, 0x42,
 	0xbc, 0x7a, 0x05, 0xc9, 0x7a, 0x70, 0xed, 0x52, 0xa8, 0x5c, 0x21, 0x6d, 0x2e, 0x76, 0xe7, 0x8c,
 	0xc4, 0xbc, 0xbc, 0xd4, 0x1c, 0xfc, 0x0a, 0x35, 0x18, 0x0d, 0x18, 0x85, 0xf4, 0xb9, 0x78, 0xa1,
-	0x8a, 0xfd, 0xf3, 0x52, 0xc3, 0x13, 0x2b, 0x09, 0x69, 0x49, 0x62, 0x03, 0xfb, 0xc1, 0x18, 0x10,
-	0x00, 0x00, 0xff, 0xff, 0x79, 0x7c, 0x33, 0x89, 0xd2, 0x00, 0x00, 0x00,
+	0x8a, 0xfd, 0xf3, 0x52, 0xc3, 0x13, 0x2b, 0x09, 0x69, 0x31, 0x4a, 0xe5, 0xe2, 0x0d, 0x28, 0x4d,
+	0x2a, 0x2e, 0x4d, 0x82, 0xb9, 0x4a, 0x9d, 0x8b, 0x3d, 0xa0, 0x34, 0x29, 0x27, 0xb3, 0x38, 0x83,
+	0xa0, 0xbb, 0x38, 0x83, 0x4b, 0x93, 0x8a, 0x93, 0x8b, 0x32, 0x93, 0x52, 0xf1, 0x2b, 0x35, 0x60,
+	0x4c, 0x62, 0x03, 0x07, 0x95, 0x31, 0x20, 0x00, 0x00, 0xff, 0xff, 0xf1, 0xef, 0x8c, 0x45, 0x39,
+	0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -98,7 +101,7 @@ type HelloServiceClient interface {
 	Hello(ctx context.Context, in *StringDto, opts ...grpc.CallOption) (*StringDto, error)
 	//  .. grpc的流使用 关键字 stream 指定启用流特性，参数部分是接收客户端参数的流，返回值是返回给客户端的流。
 	Channel(ctx context.Context, opts ...grpc.CallOption) (HelloService_ChannelClient, error)
-	// 单向流
+	// 单向流使用
 	ChannelOneWay(ctx context.Context, opts ...grpc.CallOption) (HelloService_ChannelOneWayClient, error)
 }
 
@@ -190,7 +193,7 @@ type HelloServiceServer interface {
 	Hello(context.Context, *StringDto) (*StringDto, error)
 	//  .. grpc的流使用 关键字 stream 指定启用流特性，参数部分是接收客户端参数的流，返回值是返回给客户端的流。
 	Channel(HelloService_ChannelServer) error
-	// 单向流
+	// 单向流使用
 	ChannelOneWay(HelloService_ChannelOneWayServer) error
 }
 
@@ -302,6 +305,143 @@ var _HelloService_serviceDesc = grpc.ServiceDesc{
 			StreamName:    "ChannelOneWay",
 			Handler:       _HelloService_ChannelOneWay_Handler,
 			ClientStreams: true,
+		},
+	},
+	Metadata: "hello.proto",
+}
+
+// PubsubServiceClient is the client API for PubsubService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type PubsubServiceClient interface {
+	Publish(ctx context.Context, in *StringDto, opts ...grpc.CallOption) (*StringDto, error)
+	Subscribe(ctx context.Context, in *StringDto, opts ...grpc.CallOption) (PubsubService_SubscribeClient, error)
+}
+
+type pubsubServiceClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewPubsubServiceClient(cc *grpc.ClientConn) PubsubServiceClient {
+	return &pubsubServiceClient{cc}
+}
+
+func (c *pubsubServiceClient) Publish(ctx context.Context, in *StringDto, opts ...grpc.CallOption) (*StringDto, error) {
+	out := new(StringDto)
+	err := c.cc.Invoke(ctx, "/pc.PubsubService/Publish", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pubsubServiceClient) Subscribe(ctx context.Context, in *StringDto, opts ...grpc.CallOption) (PubsubService_SubscribeClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_PubsubService_serviceDesc.Streams[0], "/pc.PubsubService/Subscribe", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &pubsubServiceSubscribeClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type PubsubService_SubscribeClient interface {
+	Recv() (*StringDto, error)
+	grpc.ClientStream
+}
+
+type pubsubServiceSubscribeClient struct {
+	grpc.ClientStream
+}
+
+func (x *pubsubServiceSubscribeClient) Recv() (*StringDto, error) {
+	m := new(StringDto)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// PubsubServiceServer is the server API for PubsubService service.
+type PubsubServiceServer interface {
+	Publish(context.Context, *StringDto) (*StringDto, error)
+	Subscribe(*StringDto, PubsubService_SubscribeServer) error
+}
+
+// UnimplementedPubsubServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedPubsubServiceServer struct {
+}
+
+func (*UnimplementedPubsubServiceServer) Publish(ctx context.Context, req *StringDto) (*StringDto, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Publish not implemented")
+}
+func (*UnimplementedPubsubServiceServer) Subscribe(req *StringDto, srv PubsubService_SubscribeServer) error {
+	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
+}
+
+func RegisterPubsubServiceServer(s *grpc.Server, srv PubsubServiceServer) {
+	s.RegisterService(&_PubsubService_serviceDesc, srv)
+}
+
+func _PubsubService_Publish_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StringDto)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PubsubServiceServer).Publish(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pc.PubsubService/Publish",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PubsubServiceServer).Publish(ctx, req.(*StringDto))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PubsubService_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(StringDto)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(PubsubServiceServer).Subscribe(m, &pubsubServiceSubscribeServer{stream})
+}
+
+//因为 Subscribe 是服务端的单向流，因此生成的 PubsubService_SubscribeServer 接口中只有 Send 方法。
+type PubsubService_SubscribeServer interface {
+	Send(*StringDto) error
+	grpc.ServerStream
+}
+
+type pubsubServiceSubscribeServer struct {
+	grpc.ServerStream
+}
+
+func (x *pubsubServiceSubscribeServer) Send(m *StringDto) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+var _PubsubService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "pc.PubsubService",
+	HandlerType: (*PubsubServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Publish",
+			Handler:    _PubsubService_Publish_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Subscribe",
+			Handler:       _PubsubService_Subscribe_Handler,
+			ServerStreams: true,
 		},
 	},
 	Metadata: "hello.proto",
