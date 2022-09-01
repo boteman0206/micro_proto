@@ -38,3 +38,13 @@ service PubsubService {
 //    Subscribe 则是一个单向的流服务。然后 gRPC 插件会为服务端和客户端生成对应的接口：
   rpc Subscribe (StringDto) returns (stream StringDto);
 }
+
+
+
+//================================token===============================
+
+service AuthService {
+  // 使用token验证
+  rpc Hello (StringDto) returns (StringDto);
+
+}
