@@ -34,13 +34,13 @@ message StringDto{
 
 //=====================发布订阅模式=============================
 
-//    现在尝试基于 gRPC 和 pubsub 包，提供一个跨网络的发布和订阅系统。首先通过 Protobuf 定义一个发布订阅服务接口：
-service PubsubService {
-//    其中 Publish 是普通的 RPC 方法
-  rpc Publish (StringDto) returns (StringDto);
-//    Subscribe 则是一个单向的流服务。然后 gRPC 插件会为服务端和客户端生成对应的接口：
-  rpc Subscribe (StringDto) returns (stream StringDto);
-}
+////    现在尝试基于 gRPC 和 pubsub 包，提供一个跨网络的发布和订阅系统。首先通过 Protobuf 定义一个发布订阅服务接口：
+//service PubsubService {
+////    其中 Publish 是普通的 RPC 方法
+//  rpc Publish (StringDto) returns (StringDto);
+////    Subscribe 则是一个单向的流服务。然后 gRPC 插件会为服务端和客户端生成对应的接口：
+//  rpc Subscribe (StringDto) returns (stream StringDto);
+//}
 
 
 
@@ -59,18 +59,18 @@ service AuthService {
 //    第二版的 Protobuf 有个默认值特性，可以为字符串或数值类型的成员定义默认值。 在第三版的 Protobuf 中不再支持默认值特性，但是我们可以通过扩展选项自己模拟默认值特性
 
 //
-//service DefaultValue {
-//  // 测试默认值使用
-//  rpc TestMessage (Message) returns (Message);
-//
-//}
-//
-//extend google.protobuf.FieldOptions {
-//  string default_string = 50000;
-//  int32 default_int = 50001;
-//}
-//
-//message Message {
-//  string name = 1 [(default_string) = "gopher"];
-//  int32 age = 2[(default_int) = 10];
-//}
+service DefaultValue {
+  // 测试默认值使用
+  rpc TestMessage (Message) returns (Message);
+
+}
+
+extend google.protobuf.FieldOptions {
+  string default_string = 50000;
+  int32 default_int = 50001;
+}
+
+message Message {
+  string name = 1 [(default_string) = "gopher"];
+  int32 age = 2[(default_int) = 10];
+}
