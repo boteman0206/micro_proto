@@ -8,6 +8,10 @@ proto文件
 添加子模块
 git submodule add https://gitlab.com/b-project
 
+直接拉取含有子模块的项目
+git clone --recurse-submodules xxx/micro_product.git
+
+
 
 
 生成的proto文件的命令  cd到指定的proto的目录文件下面，然后执行
