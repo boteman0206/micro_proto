@@ -6,8 +6,11 @@ package pc;
 
 //数据中心商品模块服务
 service DcProduct {
+  rpc TestProduct(GetProductDto) returns (BaseResponse);
+
   //新增、编辑品牌
   rpc GetProduct(GetProductDto) returns (BaseResponse);
+
 }
 
 
