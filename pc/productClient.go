@@ -2,7 +2,6 @@ package pc
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/golang/glog"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/grpc"
@@ -55,21 +54,4 @@ func AppendToOutgoingContextLoginUserInfo(ctx context.Context, c ...echo.Context
 	}
 	trace_id := c[0].Get(TraceId).(string)
 	return metadata.AppendToOutgoingContext(ctx, TraceId, trace_id)
-}
-
-// 加载grpc的header信息
-func LoadTraceIdStr(ctx context.Context) string {
-	isExist := ctx.Value(TraceId)
-	if isExist != nil {
-		return isExist.(string)
-	}
-
-	var traceId string
-	if md, ok := metadata.FromIncomingContext(ctx); ok && len(md.Get(traceId)) > 0 {
-		if err := json.Unmarshal([]byte(md.Get(traceId)[0]), &traceId); err != nil {
-			glog.Error(err)
-		}
-	}
-
-	return traceId
 }
