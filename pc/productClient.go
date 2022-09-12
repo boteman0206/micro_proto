@@ -2,9 +2,11 @@ package pc
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/golang/glog"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"time"
 )
 
@@ -30,8 +32,8 @@ func GetDcProductGrpcClient(url string, c ...echo.Context) *Client {
 		return nil
 	} else {
 		client.RPC = NewDcProductClient(client.Conn)
-		//添加用户信息
-		//client.Ctx = AppendToOutgoingContextLoginUserInfo(context.Background(), c...)
+		//添加trace_id
+		client.Ctx = AppendToOutgoingContextLoginUserInfo(context.Background(), c...)
 		client.Ctx = context.Background()
 		client.Ctx, client.Cf = context.WithTimeout(client.Ctx, time.Minute*30)
 		return client
@@ -42,4 +44,32 @@ func GetDcProductGrpcClient(url string, c ...echo.Context) *Client {
 func (d *Client) Close() {
 	//d.Conn.Close()
 	//d.Cf()
+}
+
+var TraceId = "trace_id"
+
+//请求header添加到grpc上下文
+func AppendToOutgoingContextLoginUserInfo(ctx context.Context, c ...echo.Context) context.Context {
+	if len(c) == 0 {
+		return context.Background()
+	}
+	trace_id := c[0].Get(TraceId).(string)
+	return metadata.AppendToOutgoingContext(ctx, TraceId, trace_id)
+}
+
+// 加载grpc的header信息
+func LoadTraceIdStr(ctx context.Context) string {
+	isExist := ctx.Value(TraceId)
+	if isExist != nil {
+		return isExist.(string)
+	}
+
+	var traceId string
+	if md, ok := metadata.FromIncomingContext(ctx); ok && len(md.Get(traceId)) > 0 {
+		if err := json.Unmarshal([]byte(md.Get(traceId)[0]), &traceId); err != nil {
+			glog.Error(err)
+		}
+	}
+
+	return traceId
 }
