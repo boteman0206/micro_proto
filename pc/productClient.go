@@ -33,7 +33,7 @@ func GetDcProductGrpcClient(url string, c ...echo.Context) *Client {
 		client.RPC = NewDcProductClient(client.Conn)
 		//添加trace_id
 		client.Ctx = AppendToOutgoingContextLoginUserInfo(context.Background(), c...)
-		client.Ctx, client.Cf = context.WithTimeout(client.Ctx, time.Minute*30)
+		client.Ctx, client.Cf = context.WithTimeout(client.Ctx, time.Second*3)
 		return client
 	}
 }
